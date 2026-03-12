@@ -87,3 +87,7 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 8. Temporal verification automated failsafe for temporal data
 
 9. Create a GUI that streamlines running the program for the user without looking back to and from README
+
+10. Batch file to automatically put in sklearn environement and libraries, make experience easier for user
+
+11. HTML translation for output: shows data and present data well
