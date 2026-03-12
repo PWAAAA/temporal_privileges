@@ -80,4 +80,4 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 
 5. Make this file itself clearer and more obvious every step on the way
 
-6. 
+6. Stratify kronoRF- separate files/folder for models, data, make more MODULAR
