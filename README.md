@@ -91,3 +91,5 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 10. Batch file to automatically put in sklearn environement and libraries, make experience easier for user
 
 11. HTML translation for output: shows data and present data well
+
+12. Experimentation for term project finished by April 9th
