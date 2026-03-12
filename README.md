@@ -85,3 +85,5 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 7. Manually print data lifecycle data in its own folder after modularization
 
 8. Temporal verification automated failsafe for temporal data
+
+9. Create a GUI that streamlines running the program for the user without looking back to and from README
