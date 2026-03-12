@@ -5,7 +5,7 @@ This RF model uses the kronodroid dataset with temporal variables embedded in to
 
 Before use, the model requires libraries: os, numpy, pandas, and sklearn, with these libraries needing to be run in a virtual environment for sklearn. Create the virtual environment by navigating to the intended parent folder such as: "cd desktop/temporalResearchProj", and then run "python -m venv sklearn-env". Afterwards, run sklearn-env\Scripts\activate and "pip install numpy pandas matplotlib scikit-learn". 
 
-Next, your IDE python compiler must use that of the virtual environment's. In VSC, this can be changed by typing ">python: select interpreter" in the top search bar. From here, ensure the RF python script and its accompanying kronodroid and privilege lifecycle datasets are all in the same folder, and run the kronoRF python script.
+Next, your IDE (preferably VSC) python compiler must use that of the virtual environment's. In VSC, this can be changed by typing ">python: select interpreter" in the top search bar. From here, ensure the kronoRF python script and its accompanying kronodroid and privilege lifecycle datasets are all in the same folder, and run the kronoRF python script.
 
 A, B, C models are produced, that test static variables exclusively, temporal variables exclusively, and both, respectively.
 
