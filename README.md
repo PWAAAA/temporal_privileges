@@ -83,3 +83,5 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 6. Stratify kronoRF- separate files/folder for models, data, make more MODULAR
 
 7. Manually print data lifecycle data in its own folder after modularization
+
+8. Temporal verification automated failsafe for temporal data
