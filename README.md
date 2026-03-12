@@ -77,3 +77,7 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 3. No real device data yet
 
 4. Only RF implemented so far
+
+5. Make this file itself clearer and more obvious every step on the way
+
+6. 
