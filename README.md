@@ -51,7 +51,7 @@ AUT: summary of overall performance
 7. A, B, C models are evaluated on Macro F1, Balanced Accuracy, Weighted F1 metrics. 
 
 Example table:
-
+```
 ======================================================================
 Metric: [metric]                (AUT over k=1–3, excluding 2018)
   Model                          k=1    k=2    k=3    k=4    AUT
@@ -60,7 +60,7 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
   [B] Temporal only              0.XXX  0.XXX  0.XXX  0.XXX  0.XXXX
   [C] Count-free full model      0.XXX  0.XXX  0.XXX  0.XXX  0.XXXX
 =======================================================================
-
+```
 | Metric | Why |
 |--------|-----|
 | **Macro F1** | Primary AUT metric; treats malware and benign classes equally regardless of size |
