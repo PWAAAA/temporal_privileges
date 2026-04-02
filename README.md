@@ -69,27 +69,12 @@ Metric: [metric]                (AUT over k=1–3, excluding 2018)
 | **Accuracy / Precision / Recall** | Printed per fold for reference; not used in AUT |
 
 # Limitations, Future work:
-
-1. Based on single fixed training window
-
-2. Dataset becomes more malware concentrated as it progresses. By 2018, only 30 samples are benign. 93% are malware.
-
-3. No real device data yet
-
-4. Only RF implemented so far
-
 5. Make this file itself clearer and more obvious every step on the way
 
-6. Stratify kronoRF- separate files/folder for models, data, make more MODULAR
+6. Stratify kronoRF- separate files/folder for models, data, make more MODULAR ^-v
 
 7. Manually print data lifecycle data in its own folder after modularization
 
-8. Temporal verification automated failsafe for temporal data
-
-9. Create a GUI that streamlines running the program for the user without looking back to and from README
-
-10. Batch file to automatically put in sklearn environement and libraries, make experience easier for user
-
-11. HTML translation for output: shows data and present data well
+8. Temporal verification automated failsafe for temporal data - yes but no announcement automations only existing restrictions/deprecations
 
 12. Experimentation for term project finished by April 9th
