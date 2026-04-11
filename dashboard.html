@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KronoDroid Experiment Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e1e4ed;
+    --muted: #8b8fa3;
+    --accent: #6c8cff;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --cyan: #22d3ee;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 600; }
+  header h1 span { color: var(--accent); }
+  .meta-bar {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .meta-bar strong { color: var(--text); }
+
+  .controls {
+    padding: 1.2rem 2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .controls label { font-size: 0.85rem; color: var(--muted); }
+  .controls select, .controls input[type="file"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+  }
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  #status {
+    padding: 0.8rem 2rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: none;
+  }
+  #status.visible { display: block; }
+  #status.error { color: var(--red); }
+
+  .dashboard {
+    padding: 1.5rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+  }
+  .card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+  }
+  .card-full { grid-column: 1 / -1; }
+
+  .chart-container {
+    position: relative;
+    height: 320px;
+  }
+
+  /* Stats row */
+  .stats-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    text-align: center;
+  }
+  .stat-card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-card .label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  /* Data table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .data-table th, .data-table td {
+    padding: 0.5rem 0.8rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table th {
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+  }
+  .data-table td:first-child, .data-table th:first-child {
+    text-align: left;
+  }
+  .data-table tr:hover td { background: rgba(108, 140, 255, 0.05); }
+  .excluded { opacity: 0.5; }
+
+  /* Run button states */
+  .btn.running {
+    background: var(--amber);
+    color: #000;
+    pointer-events: none;
+    position: relative;
+  }
+  .btn.running::after {
+    content: '';
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Log panel */
+  .log-panel {
+    background: #0d0f14;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 1rem 2rem;
+    padding: 1rem;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    color: var(--green);
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  /* Hidden state */
+  .hidden { display: none !important; }
+
+  /* Print styles */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    body { background: #fff !important; color: #111 !important; font-size: 11px; }
+    header { background: #fff !important; border-bottom: 2px solid #333 !important; padding: 0.8rem 1rem !important; }
+    header h1 { color: #111 !important; font-size: 1.2rem; }
+    header h1 span { color: #2a5bd7 !important; }
+    .meta-bar { color: #555 !important; }
+    .meta-bar strong { color: #111 !important; }
+    .controls, #status, .log-panel, #printBtn { display: none !important; }
+    .dashboard { display: block !important; padding: 0.5rem 0 !important; max-width: 100%; }
+    .stats-row { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 0.5rem; margin-bottom: 0.8rem; page-break-inside: avoid; }
+    .stat-card { background: #f5f5f5 !important; border: 1px solid #ccc !important; padding: 0.6rem !important; }
+    .stat-card .value { color: #2a5bd7 !important; font-size: 1.4rem; }
+    .stat-card .label { color: #555 !important; }
+    .card { background: #fff !important; border: 1px solid #ccc !important; padding: 0.8rem !important; margin-bottom: 0.8rem; page-break-inside: avoid; break-inside: avoid; }
+    .card h3 { color: #111 !important; font-size: 0.9rem; }
+    .card-full { width: 100%; }
+    .chart-container { height: 260px !important; }
+    .chart-container[style] { height: 300px !important; }
+    .data-table th { color: #555 !important; }
+    .data-table td, .data-table th { border-bottom: 1px solid #ddd !important; padding: 0.3rem 0.5rem !important; }
+    .data-table tr:hover td { background: none !important; }
+    /* Two-column grid for charts */
+    .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @page { margin: 1cm; size: landscape; }
+  }
+
+  @media (max-width: 900px) {
+    .dashboard { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>Krono</span>Droid Dashboard</h1>
+  <div class="meta-bar" id="metaBar"></div>
+</header>
+
+<div class="controls">
+  <label for="modelType">Classifier:</label>
+  <select id="modelType">
+    <option value="rf">Random Forest</option>
+    <option value="xgb">XGBoost</option>
+    <option value="lr">Logistic Regression</option>
+  </select>
+  <button class="btn" id="runBtn">Run Experiment</button>
+  <div class="separator" style="width:1px;height:24px;background:var(--border);margin:0 0.5rem;"></div>
+  <label for="fileInput">Load JSON:</label>
+  <input type="file" id="fileInput" accept=".json">
+  <button class="btn btn-outline" id="loadDefault">Load last run</button>
+  <div style="flex:1"></div>
+  <label for="modelSelect">Feature set:</label>
+  <select id="modelSelect"></select>
+  <div class="separator" style="width:1px;height:24px;background:var(--border);margin:0 0.5rem;"></div>
+  <button class="btn btn-outline" id="printBtn">Print Report to PDF</button>
+</div>
+
+<div id="status">Loading...</div>
+<div class="log-panel hidden" id="logPanel"></div>
+
+<div class="dashboard hidden" id="dashboard">
+  <!-- Stats summary -->
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- Accuracy by year -->
+  <div class="card">
+    <h3>Accuracy by Test Year</h3>
+    <div class="chart-container"><canvas id="chartAcc"></canvas></div>
+  </div>
+
+  <!-- Precision by year -->
+  <div class="card">
+    <h3>Precision by Test Year</h3>
+    <div class="chart-container"><canvas id="chartPrec"></canvas></div>
+  </div>
+
+  <!-- Recall by year -->
+  <div class="card">
+    <h3>Recall by Test Year</h3>
+    <div class="chart-container"><canvas id="chartRec"></canvas></div>
+  </div>
+
+  <!-- All metrics overlay -->
+  <div class="card">
+    <h3>All Metrics Overlay</h3>
+    <div class="chart-container"><canvas id="chartAll"></canvas></div>
+  </div>
+
+  <!-- Comparison across feature sets -->
+  <div class="card card-full">
+    <h3>Feature Set Comparison (All Years)</h3>
+    <div class="chart-container" style="height:360px;"><canvas id="chartCompare"></canvas></div>
+  </div>
+
+  <!-- Ablation table (Paper Table 2) -->
+  <div class="card card-full">
+    <h3>Table 2: Lifecycle Feature Ablation Results</h3>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="ablationTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Ablation chart -->
+  <div class="card card-full">
+    <h3>Ablation: Macro F1 by Test Year</h3>
+    <div class="chart-container" style="height:360px;"><canvas id="chartAblation"></canvas></div>
+  </div>
+
+  <!-- Data table -->
+  <div class="card card-full">
+    <h3>Detailed Results</h3>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="resultsTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let DATA = null;
+const charts = {};
+
+const COLORS = {
+  accuracy:  { line: '#6c8cff', fill: 'rgba(108,140,255,0.12)' },
+  precision: { line: '#4ade80', fill: 'rgba(74,222,128,0.12)' },
+  recall:    { line: '#fbbf24', fill: 'rgba(251,191,36,0.12)' },
+  f1_macro:  { line: '#f87171', fill: 'rgba(248,113,113,0.12)' },
+  bal_acc:   { line: '#22d3ee', fill: 'rgba(34,211,238,0.12)' },
+};
+
+const MODEL_COLORS = ['#6c8cff', '#4ade80', '#fbbf24', '#f87171', '#22d3ee', '#c084fc'];
+
+// ── Chart defaults ────────────────────────────────────────────────────
+Chart.defaults.color = '#8b8fa3';
+Chart.defaults.borderColor = '#2a2d3a';
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+
+function chartOpts(title, yMin = 0, yMax = 1.0) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1d27',
+        borderColor: '#2a2d3a',
+        borderWidth: 1,
+        titleColor: '#e1e4ed',
+        bodyColor: '#e1e4ed',
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(4)}`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: '#2a2d3a' } },
+      y: { min: yMin, max: yMax, grid: { color: '#2a2d3a' },
+           ticks: { callback: v => v.toFixed(2) } }
+    }
+  };
+}
+
+function makeDataset(label, data, colorKey) {
+  const c = COLORS[colorKey] || COLORS.accuracy;
+  return {
+    label, data,
+    borderColor: c.line,
+    backgroundColor: c.fill,
+    fill: true,
+    tension: 0.3,
+    pointRadius: 5,
+    pointHoverRadius: 7,
+    borderWidth: 2,
+  };
+}
+
+// ── Load and render ───────────────────────────────────────────────────
+function showStatus(msg, isError) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'visible' + (isError ? ' error' : '');
+}
+
+// Only show these two feature sets
+const VISIBLE_KEYS = ['static_flags', 'best_validated'];
+
+function loadData(json) {
+  DATA = json;
+  // Filter results to only visible keys
+  const filtered = {};
+  for (const key of VISIBLE_KEYS) {
+    if (DATA.results[key]) filtered[key] = DATA.results[key];
+  }
+  DATA.results = filtered;
+
+  const sel = document.getElementById('modelSelect');
+  sel.innerHTML = '';
+  for (const [key, val] of Object.entries(DATA.results)) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = val.label;
+    sel.appendChild(opt);
+  }
+
+  // Meta bar
+  const meta = DATA.meta;
+  document.getElementById('metaBar').innerHTML =
+    `<span>Train: <strong>${meta.train_years[0]}-${meta.train_years[meta.train_years.length-1]}</strong></span>` +
+    `<span>Test: <strong>${meta.test_years.join(', ')}</strong></span>` +
+    `<span>Model: <strong>${meta.model.split('(')[0].trim()}</strong></span>`;
+
+  // Default to best_validated
+  if (DATA.results['best_validated']) {
+    sel.value = 'best_validated';
+  }
+
+  document.getElementById('status').className = '';
+  document.getElementById('dashboard').classList.remove('hidden');
+
+  renderAll();
+}
+
+function getSelectedData() {
+  const key = document.getElementById('modelSelect').value;
+  return DATA.results[key];
+}
+
+function renderAll() {
+  const d = getSelectedData();
+  const years = Object.keys(d.years).sort();
+  const labels = years.map(y => `${y} (k=${d.years[y].k})`);
+
+  const acc  = years.map(y => d.years[y].accuracy);
+  const prec = years.map(y => d.years[y].precision);
+  const rec  = years.map(y => d.years[y].recall);
+
+  // Stats — show best_validated accuracy at each k
+  const bv = DATA.results['best_validated'];
+  const bvYears = bv ? Object.keys(bv.years).sort() : [];
+  const statCards = bvYears.map(y => {
+    const entry = bv.years[y];
+    return { value: (entry.accuracy * 100).toFixed(1) + '%', label: `k=${entry.k} Accuracy (${y})` };
+  });
+
+  document.getElementById('statsRow').innerHTML = statCards
+    .map(s => `<div class="stat-card"><div class="value">${s.value}</div><div class="label">${s.label}</div></div>`).join('');
+
+  // Per-metric charts
+  const yMin = Math.max(0, Math.min(...acc, ...prec, ...rec) - 0.1);
+  renderChart('chartAcc',  labels, [makeDataset('Accuracy', acc, 'accuracy')], yMin);
+  renderChart('chartPrec', labels, [makeDataset('Precision', prec, 'precision')], yMin);
+  renderChart('chartRec',  labels, [makeDataset('Recall', rec, 'recall')], yMin);
+
+  // All metrics overlay
+  renderChart('chartAll', labels, [
+    makeDataset('Accuracy', acc, 'accuracy'),
+    makeDataset('Precision', prec, 'precision'),
+    makeDataset('Recall', rec, 'recall'),
+  ], yMin, true);
+
+  // Comparison chart
+  renderComparisonChart(labels, years);
+
+  // Table
+  renderTable(years);
+
+  // Ablation
+  renderAblation();
+}
+
+function renderChart(id, labels, datasets, yMin, showLegend = false) {
+  if (charts[id]) charts[id].destroy();
+  const opts = chartOpts('', yMin, 1.0);
+  if (showLegend) opts.plugins.legend = { display: true, labels: { usePointStyle: true, pointStyle: 'circle' } };
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'line', data: { labels, datasets }, options: opts
+  });
+}
+
+function renderComparisonChart(labels, years) {
+  if (charts.chartCompare) charts.chartCompare.destroy();
+
+  const datasets = [];
+  let i = 0;
+  for (const [key, val] of Object.entries(DATA.results)) {
+    const acc = years.map(y => val.years[y]?.accuracy ?? null);
+    datasets.push({
+      label: val.label,
+      data: acc,
+      borderColor: MODEL_COLORS[i % MODEL_COLORS.length],
+      backgroundColor: 'transparent',
+      tension: 0.3,
+      pointRadius: 5,
+      borderWidth: 2,
+    });
+    i++;
+  }
+
+  const allVals = datasets.flatMap(ds => ds.data.filter(v => v !== null));
+  const yMin = Math.max(0, Math.min(...allVals) - 0.1);
+
+  const opts = chartOpts('', yMin, 1.0);
+  opts.plugins.legend = { display: true, labels: { usePointStyle: true, pointStyle: 'circle' } };
+
+  charts.chartCompare = new Chart(document.getElementById('chartCompare'), {
+    type: 'line', data: { labels, datasets }, options: opts
+  });
+}
+
+function renderTable(years) {
+  const thead = document.querySelector('#resultsTable thead');
+  const tbody = document.querySelector('#resultsTable tbody');
+
+  thead.innerHTML = `<tr>
+    <th>Feature Set</th>
+    ${years.map(y => {
+      const k = DATA.results[Object.keys(DATA.results)[0]].years[y].k;
+      return `<th colspan="3">${y} (k=${k})</th>`;
+    }).join('')}
+  </tr>
+  <tr>
+    <th></th>
+    ${years.map(() => '<th>Acc</th><th>Prec</th><th>Rec</th>').join('')}
+  </tr>`;
+
+  tbody.innerHTML = Object.entries(DATA.results).map(([key, val]) => {
+    return `<tr>
+      <td>${val.label}</td>
+      ${years.map(y => {
+        const d = val.years[y];
+        if (!d) return '<td>-</td><td>-</td><td>-</td>';
+        const cls = d.excluded_from_aut ? ' class="excluded"' : '';
+        return `<td${cls}>${d.accuracy.toFixed(4)}</td><td${cls}>${d.precision.toFixed(4)}</td><td${cls}>${d.recall.toFixed(4)}</td>`;
+      }).join('')}
+    </tr>`;
+  }).join('');
+}
+
+// ── Run experiment ────────────────────────────────────────────────────
+let pollTimer = null;
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function pollStatus() {
+  fetch('/status', { method: 'POST' })
+    .then(r => r.json())
+    .then(resp => {
+      const btn = document.getElementById('runBtn');
+      const logPanel = document.getElementById('logPanel');
+
+      if (resp.status === 'done') {
+        stopPolling();
+        if (resp.data.log) logPanel.textContent = resp.data.log;
+        btn.textContent = 'Run Experiment';
+        btn.classList.remove('running');
+        showStatus('Experiment complete.', false);
+        loadData(resp.data);
+      } else if (resp.status === 'error') {
+        stopPolling();
+        btn.textContent = 'Run Experiment';
+        btn.classList.remove('running');
+        showStatus('Error: ' + resp.error, true);
+        logPanel.textContent += '\nERROR: ' + resp.error;
+      }
+      // else still running — keep polling
+    })
+    .catch(() => {}); // ignore transient fetch errors
+}
+
+document.getElementById('runBtn').addEventListener('click', () => {
+  const btn = document.getElementById('runBtn');
+  const logPanel = document.getElementById('logPanel');
+  const modelType = document.getElementById('modelType').value;
+
+  btn.textContent = 'Running...';
+  btn.classList.add('running');
+  logPanel.textContent = `Starting ${modelType.toUpperCase()} experiment...\n`;
+  logPanel.classList.remove('hidden');
+  showStatus('Experiment running — this takes 1-3 minutes...', false);
+
+  fetch('/run', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model_type: modelType }),
+  })
+  .then(r => r.json())
+  .then(resp => {
+    if (resp.error) {
+      btn.textContent = 'Run Experiment';
+      btn.classList.remove('running');
+      showStatus(resp.error, true);
+      return;
+    }
+    // Start polling for results
+    stopPolling();
+    pollTimer = setInterval(pollStatus, 2000);
+  })
+  .catch(err => {
+    btn.textContent = 'Run Experiment';
+    btn.classList.remove('running');
+    showStatus('Could not reach server. Is run_dashboard.py running?', true);
+  });
+});
+
+// ── Event handlers ────────────────────────────────────────────────────
+document.getElementById('modelSelect').addEventListener('change', renderAll);
+document.getElementById('modelType').addEventListener('change', () => { if (DATA) renderAblation(); });
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  showStatus('Reading file...');
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      loadData(JSON.parse(evt.target.result));
+    } catch (err) {
+      showStatus('Error parsing JSON: ' + err.message, true);
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('loadDefault').addEventListener('click', () => {
+  showStatus('Loading dashboard_data.json...');
+  fetch('dashboard_data.json')
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status} — run run_dashboard.py first to generate the data file.`);
+      return r.json();
+    })
+    .then(loadData)
+    .catch(err => showStatus(err.message, true));
+});
+
+// ── Print to PDF ─────────────────────────────────────────────────────
+document.getElementById('printBtn').addEventListener('click', () => {
+  // Force all charts to re-render with print-friendly colors before printing
+  const chartCanvases = document.querySelectorAll('canvas');
+
+  // Brief delay to let CSS apply, then print
+  // Chart.js canvases are rasterized so they print as-is
+  window.print();
+});
+
+// ── Ablation data (Paper Table 2) ────────────────────────────────────
+const ABLATION_DATA = {
+  lr: {
+    "Static Only":            { years: {2013:{f1:0.821,bal:0.907}, 2014:{f1:0.880,bal:0.924}, 2015:{f1:0.856,bal:0.862}, 2016:{f1:0.757,bal:0.812}}, aut_f1: 0.8522 },
+    "+ Age Features":         { years: {2013:{f1:0.622,bal:0.583}, 2014:{f1:0.629,bal:0.591}, 2015:{f1:0.511,bal:0.566}, 2016:{f1:0.549,bal:0.556}}, aut_f1: 0.5874 },
+    "+ Restriction Features": { years: {2013:{f1:0.826,bal:0.905}, 2014:{f1:0.876,bal:0.865}, 2015:{f1:0.738,bal:0.732}, 2016:{f1:0.708,bal:0.679}}, aut_f1: 0.8137 },
+    "+ Deprecation Features": { years: {2013:{f1:0.823,bal:0.907}, 2014:{f1:0.880,bal:0.923}, 2015:{f1:0.853,bal:0.857}, 2016:{f1:0.757,bal:0.811}}, aut_f1: 0.8517 },
+    "Full Lifecycle Set":     { years: {2013:{f1:0.637,bal:0.594}, 2014:{f1:0.632,bal:0.592}, 2015:{f1:0.511,bal:0.564}, 2016:{f1:0.551,bal:0.557}}, aut_f1: 0.5930 },
+  },
+  rf: {
+    "Static Only":            { years: {2013:{f1:0.779,bal:0.933}, 2014:{f1:0.718,bal:0.888}, 2015:{f1:0.692,bal:0.741}, 2016:{f1:0.444,bal:0.623}}, aut_f1: 0.7299 },
+    "+ Age Features":         { years: {2013:{f1:0.888,bal:0.872}, 2014:{f1:0.769,bal:0.828}, 2015:{f1:0.835,bal:0.821}, 2016:{f1:0.694,bal:0.734}}, aut_f1: 0.8307 },
+    "+ Restriction Features": { years: {2013:{f1:0.763,bal:0.928}, 2014:{f1:0.764,bal:0.908}, 2015:{f1:0.740,bal:0.775}, 2016:{f1:0.399,bal:0.581}}, aut_f1: 0.7556 },
+    "+ Deprecation Features": { years: {2013:{f1:0.784,bal:0.934}, 2014:{f1:0.716,bal:0.885}, 2015:{f1:0.736,bal:0.773}, 2016:{f1:0.626,bal:0.752}}, aut_f1: 0.7454 },
+    "Full Lifecycle Set":     { years: {2013:{f1:0.893,bal:0.878}, 2014:{f1:0.770,bal:0.827}, 2015:{f1:0.838,bal:0.824}, 2016:{f1:0.714,bal:0.752}}, aut_f1: 0.8338 },
+  }
+};
+
+const ABLATION_COLORS = {
+  "Static Only": '#6c8cff',
+  "+ Age Features": '#fbbf24',
+  "+ Restriction Features": '#f87171',
+  "+ Deprecation Features": '#4ade80',
+  "Full Lifecycle Set": '#c084fc',
+};
+
+function renderAblation() {
+  const modelType = document.getElementById('modelType').value || 'rf';
+  const ablation = ABLATION_DATA[modelType] || ABLATION_DATA.rf;
+  const testYears = [2013, 2014, 2015, 2016];
+  const autExclude = [2016];
+
+  // Render table
+  const thead = document.querySelector('#ablationTable thead');
+  const tbody = document.querySelector('#ablationTable tbody');
+
+  thead.innerHTML = `<tr>
+    <th>Feature Set</th>
+    ${testYears.map(y => `<th>k=${y - 2012} (${y})</th>`).join('')}
+    <th>AUT (F1)</th>
+  </tr>`;
+
+  tbody.innerHTML = Object.entries(ablation).map(([name, data]) => {
+    const isBaseline = name === 'Static Only';
+    return `<tr${isBaseline ? ' style="font-weight:600"' : ''}>
+      <td>${name}</td>
+      ${testYears.map(y => {
+        const v = data.years[y];
+        const cls = autExclude.includes(y) ? ' class="excluded"' : '';
+        return `<td${cls}>${v.f1.toFixed(3)}</td>`;
+      }).join('')}
+      <td style="font-weight:600">${data.aut_f1.toFixed(4)}</td>
+    </tr>`;
+  }).join('');
+
+  // Render chart
+  if (charts.chartAblation) charts.chartAblation.destroy();
+  const labels = testYears.map(y => `${y} (k=${y - 2012})`);
+  const datasets = Object.entries(ablation).map(([name, data]) => ({
+    label: name,
+    data: testYears.map(y => data.years[y].f1),
+    borderColor: ABLATION_COLORS[name],
+    backgroundColor: 'transparent',
+    tension: 0.3,
+    pointRadius: 5,
+    borderWidth: name === 'Static Only' ? 3 : 2,
+    borderDash: name === 'Static Only' ? [6, 3] : [],
+  }));
+
+  const allVals = datasets.flatMap(ds => ds.data);
+  const yMin = Math.max(0, Math.min(...allVals) - 0.1);
+
+  const opts = chartOpts('', yMin, 1.0);
+  opts.plugins.legend = { display: true, labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } };
+
+  charts.chartAblation = new Chart(document.getElementById('chartAblation'), {
+    type: 'line', data: { labels, datasets }, options: opts
+  });
+}
+
+// Auto-load if opened via file:// with data nearby
+window.addEventListener('DOMContentLoaded', () => {
+  // Try auto-loading
+  fetch('dashboard_data.json')
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(loadData)
+    .catch(() => {
+      showStatus('Click "Load dashboard_data.json" after running: python run_dashboard.py', false);
+      document.getElementById('status').className = 'visible';
+    });
+});
+</script>
+</body>
+</html>

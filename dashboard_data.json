@@ -1,0 +1,207 @@
+{
+  "meta": {
+    "train_years": [
+      2009,
+      2010,
+      2011,
+      2012
+    ],
+    "test_years": [
+      2013,
+      2014,
+      2015,
+      2016
+    ],
+    "aut_exclude": [
+      2016
+    ],
+    "model_type": "lr",
+    "model": "LogisticRegression (saga, balanced)"
+  },
+  "results": {
+    "static_flags": {
+      "label": "[A] Static flags only",
+      "years": {
+        "2013": {
+          "k": 1,
+          "n_train": 38017,
+          "n_test": 5504,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 91.8,
+          "accuracy": 0.9326,
+          "precision": 0.9885,
+          "recall": 0.9375,
+          "f1_macro": 0.8211,
+          "f1_weighted": 0.9393,
+          "bal_acc": 0.9075,
+          "excluded_from_aut": false
+        },
+        "2014": {
+          "k": 2,
+          "n_train": 38017,
+          "n_test": 5410,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 88.9,
+          "accuracy": 0.9471,
+          "precision": 0.9865,
+          "recall": 0.9536,
+          "f1_macro": 0.8796,
+          "f1_weighted": 0.9498,
+          "bal_acc": 0.9242,
+          "excluded_from_aut": false
+        },
+        "2015": {
+          "k": 3,
+          "n_train": 38017,
+          "n_test": 1784,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 61.4,
+          "accuracy": 0.8615,
+          "precision": 0.9094,
+          "recall": 0.8604,
+          "f1_macro": 0.856,
+          "f1_weighted": 0.8625,
+          "bal_acc": 0.8619,
+          "excluded_from_aut": false
+        },
+        "2016": {
+          "k": 4,
+          "n_train": 38017,
+          "n_test": 2393,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 79.3,
+          "accuracy": 0.812,
+          "precision": 0.9431,
+          "recall": 0.8119,
+          "f1_macro": 0.7569,
+          "f1_weighted": 0.8247,
+          "bal_acc": 0.812,
+          "excluded_from_aut": true
+        }
+      }
+    },
+    "static_pfr": {
+      "label": "[B] Static + all PFR",
+      "years": {
+        "2013": {
+          "k": 1,
+          "n_train": 38017,
+          "n_test": 5504,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 91.8,
+          "accuracy": 0.968,
+          "precision": 0.982,
+          "recall": 0.9832,
+          "f1_macro": 0.8926,
+          "f1_weighted": 0.9679,
+          "bal_acc": 0.8903,
+          "excluded_from_aut": false
+        },
+        "2014": {
+          "k": 2,
+          "n_train": 38017,
+          "n_test": 5410,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 88.9,
+          "accuracy": 0.9562,
+          "precision": 0.9743,
+          "recall": 0.9765,
+          "f1_macro": 0.8879,
+          "f1_weighted": 0.956,
+          "bal_acc": 0.8848,
+          "excluded_from_aut": false
+        },
+        "2015": {
+          "k": 3,
+          "n_train": 38017,
+          "n_test": 1784,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 61.4,
+          "accuracy": 0.764,
+          "precision": 0.7676,
+          "recall": 0.8832,
+          "f1_macro": 0.7369,
+          "f1_weighted": 0.7562,
+          "bal_acc": 0.7287,
+          "excluded_from_aut": false
+        },
+        "2016": {
+          "k": 4,
+          "n_train": 38017,
+          "n_test": 2393,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 79.3,
+          "accuracy": 0.8366,
+          "precision": 0.8656,
+          "recall": 0.9399,
+          "f1_macro": 0.7142,
+          "f1_weighted": 0.8239,
+          "bal_acc": 0.6902,
+          "excluded_from_aut": true
+        }
+      }
+    },
+    "best_validated": {
+      "label": "[C] Best validated (static + PFR)",
+      "years": {
+        "2013": {
+          "k": 1,
+          "n_train": 38017,
+          "n_test": 5504,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 91.8,
+          "accuracy": 0.968,
+          "precision": 0.982,
+          "recall": 0.9832,
+          "f1_macro": 0.8926,
+          "f1_weighted": 0.9679,
+          "bal_acc": 0.8903,
+          "excluded_from_aut": false
+        },
+        "2014": {
+          "k": 2,
+          "n_train": 38017,
+          "n_test": 5410,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 88.9,
+          "accuracy": 0.9562,
+          "precision": 0.9743,
+          "recall": 0.9765,
+          "f1_macro": 0.8879,
+          "f1_weighted": 0.956,
+          "bal_acc": 0.8848,
+          "excluded_from_aut": false
+        },
+        "2015": {
+          "k": 3,
+          "n_train": 38017,
+          "n_test": 1784,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 61.4,
+          "accuracy": 0.764,
+          "precision": 0.7676,
+          "recall": 0.8832,
+          "f1_macro": 0.7369,
+          "f1_weighted": 0.7562,
+          "bal_acc": 0.7287,
+          "excluded_from_aut": false
+        },
+        "2016": {
+          "k": 4,
+          "n_train": 38017,
+          "n_test": 2393,
+          "train_malware_pct": 27.9,
+          "test_malware_pct": 79.3,
+          "accuracy": 0.8366,
+          "precision": 0.8656,
+          "recall": 0.9399,
+          "f1_macro": 0.7142,
+          "f1_weighted": 0.8239,
+          "bal_acc": 0.6902,
+          "excluded_from_aut": true
+        }
+      }
+    }
+  },
+  "log": "Loading dataset...\nDataset: 56700 samples, 145 static flags, 74 temporal features\nBuilding feature sets...\nRunning experiment...\n  [A] Static flags only k=1 (2013): acc=0.9326  prec=0.9885  rec=0.9375\n  [A] Static flags only k=2 (2014): acc=0.9471  prec=0.9865  rec=0.9536\n  [A] Static flags only k=3 (2015): acc=0.8615  prec=0.9094  rec=0.8604\n  [A] Static flags only k=4 (2016): acc=0.8120  prec=0.9431  rec=0.8119\n  [B] Static + all PFR k=1 (2013): acc=0.9680  prec=0.9820  rec=0.9832\n  [B] Static + all PFR k=2 (2014): acc=0.9562  prec=0.9743  rec=0.9765\n  [B] Static + all PFR k=3 (2015): acc=0.7640  prec=0.7676  rec=0.8832\n  [B] Static + all PFR k=4 (2016): acc=0.8366  prec=0.8656  rec=0.9399\n  [C] Best validated (static + PFR) k=1 (2013): acc=0.9680  prec=0.9820  rec=0.9832\n  [C] Best validated (static + PFR) k=2 (2014): acc=0.9562  prec=0.9743  rec=0.9765\n  [C] Best validated (static + PFR) k=3 (2015): acc=0.7640  prec=0.7676  rec=0.8832\n  [C] Best validated (static + PFR) k=4 (2016): acc=0.8366  prec=0.8656  rec=0.9399\n"
+}
